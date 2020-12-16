@@ -45,12 +45,12 @@ public class OpenEHRConverter {
     }
 
     protected String convertResourceId(JsonNode ehrJson) {
-        String entryId = ehrJson.get("entryId").textValue();
-        String compositionId = ehrJson.get("compositionId").textValue();
+        JsonNode entryId = ehrJson.get("entryId");
+        JsonNode compositionId = ehrJson.get("compositionId");
         if (entryId == null)
-            return compositionId;
+            return compositionId.textValue();
         else {
-            return compositionId + "|" + entryId;
+            return compositionId.textValue() + "|" + entryId.textValue();
         }
     }
 

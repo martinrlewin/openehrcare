@@ -18,7 +18,7 @@ import java.util.Date;
 @ConfigurationProperties(prefix = "cdr-connector", ignoreUnknownFields = false)
 @Service
 public class ConditionConnector extends OpenEhrConnector {
-    protected String getAQL() {
+    protected String getAQLQuery() {
         return "select" +
                 " e/ehr_id/value as ehrId," +
                 " e/ehr_status/subject/external_ref/id/value as subjectId," +
@@ -49,8 +49,12 @@ public class ConditionConnector extends OpenEhrConnector {
                 " contains COMPOSITION a[openEHR-EHR-COMPOSITION.problem_list.v1]" +
                 " contains (" +
                 " EVALUATION b_a[openEHR-EHR-EVALUATION.problem_diagnosis.v1] or" +
-                " CLUSTER b_b[openEHR-EHR-CLUSTER.problem_status.v0])" +
-                " where a/name/value='Problem list'";
+                " CLUSTER b_b[openEHR-EHR-CLUSTER.problem_status.v0]) ";
+
+    }
+
+    public String getAQLWhere() {
+        return " where a/name/value='Problem list'";
     }
 
     public JsonNode getFilteredConditions(
@@ -65,12 +69,12 @@ public class ConditionConnector extends OpenEhrConnector {
 
         // patient identifier provided
         if (null != patientIdentifier) {
-            filter += getPatientIdentifierFilterAql(patientIdentifier);
+            filter += " and " + getPatientIdentifierFilterAql(patientIdentifier);
         }
 
         // patient identifier provided
         if (null != patientId) {
-            filter += getPatientIdFilterAql(patientId);
+            filter += " and " + getPatientIdFilterAql(patientId);
         }
 
 
@@ -89,7 +93,7 @@ public class ConditionConnector extends OpenEhrConnector {
             filter += getLastAssertedFilterAql(conditionLastAsserted);
         }
 
-        return getEhrJson(getAQL() + filter);
+        return getEhrJson(getAQLQuery() + getAQLWhere() + filter);
     }
 
     private String getLastAssertedFilterAql(DateRangeParam conditionAsserted) {

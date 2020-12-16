@@ -19,7 +19,7 @@ import java.util.Date;
 @ConfigurationProperties(prefix = "cdr-connector", ignoreUnknownFields = false)
 @Service
 public class ProcedureConnector extends OpenEhrConnector {
-    protected String getAQL() {
+    protected String getAQLQuery() {
         return "select\n" +
                 "   e/ehr_id/value as ehrId,\n" +
                 "   e/ehr_status/subject/external_ref/id/value as subjectId,\n" +
@@ -54,10 +54,13 @@ public class ProcedureConnector extends OpenEhrConnector {
                 "   b_a/description[at0001]/items[at0049]/value/value as Description\n" +
                 "from EHR e\n" +
                 "contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1]\n" +
-                "contains ACTION b_a[openEHR-EHR-ACTION.procedure.v1]\n" +
-                "where a/name/value='Procedures list'";
+                "contains ACTION b_a[openEHR-EHR-ACTION.procedure.v1]\n";
+
     }
 
+    public String getAQLWhere() {
+        return "where a/name/value='Procedures list'";
+    }
 
     public JsonNode getFilteredProcedures(
             StringParam patientId,
@@ -70,12 +73,12 @@ public class ProcedureConnector extends OpenEhrConnector {
 
         // patient identifier provided
         if (null != patientIdentifier) {
-            filter += getPatientIdentifierFilterAql(patientIdentifier);
+            filter += " and " + getPatientIdentifierFilterAql(patientIdentifier);
         }
 
         // patient id provided
         if (null != patientId) {
-            filter += getPatientIdFilterAql(patientId);
+            filter += " and " + getPatientIdFilterAql(patientId);
         }
 
         // category provided
@@ -88,7 +91,7 @@ public class ProcedureConnector extends OpenEhrConnector {
             filter += getDatePerformed(datePerformed);
         }
 
-        return getEhrJson(getAQL() + filter);
+        return getEhrJson(getAQLQuery() + getAQLWhere() + filter);
     }
 
     private String getDatePerformed(DateRangeParam datePerformed) {

@@ -43,7 +43,19 @@ public abstract class OpenEhrConnector {
         return getEhrJson(getAQL());
     }
 
-    protected abstract String getAQL();
+    protected abstract String getAQLQuery();
+
+    protected String getAQLWhere() {
+        return "";
+    }
+
+    protected String getAQLOrderBy() {
+        return "";
+    }
+
+    protected String getAQL() {
+        return getAQLQuery() + getAQLWhere() + getAQLOrderBy();
+    }
 
     /**
      * Adds the requisite AQL clause to filter the resultset to include only
@@ -64,13 +76,21 @@ public abstract class OpenEhrConnector {
         String[] openEHRIds = id.split("\\|");
         String compositionId = openEHRIds[0];
 
-        String idFilter = " and a/uid/value='" + compositionId + "'";
+        String where = getAQLWhere();
+        StringBuffer stringBuffer = new StringBuffer();
+        if (where.isEmpty()) {
+            stringBuffer.append("where ");
+        } else {
+            stringBuffer.append(" and ");
+        }
+        stringBuffer.append("a/uid/value='" + compositionId + "'");
 
         if (openEHRIds.length > 1) {
             String entryId = openEHRIds[1];
-            idFilter = idFilter.concat(" and b_a/uid/value='" + entryId + "'");
+            stringBuffer.append(" and b_a/uid/value='" + entryId + "'");
         }
-        return getEhrJson(getAQL() + idFilter);
+
+        return getEhrJson(getAQLQuery() + getAQLWhere() + stringBuffer.toString() + getAQLOrderBy());
     }
 
     /**
@@ -121,7 +141,7 @@ public abstract class OpenEhrConnector {
         if (system.isEmpty() || "https://fhir.nhs.uk/Id/nhs-number".equals(system)) {
             system = "uk.nhs.nhs_number";
         }
-        String idFilter = " and e/ehr_status/subject/external_ref/id/value='" + patientIdentifier.getValue() +
+        String idFilter = " e/ehr_status/subject/external_ref/id/value='" + patientIdentifier.getValue() +
                 "' and e/ehr_status/subject/external_ref/namespace='" + system + "'";
         return idFilter;
     }
@@ -134,7 +154,7 @@ public abstract class OpenEhrConnector {
      * @return
      */
     protected String getPatientIdFilterAql(StringParam patientId) {
-        return " and e/ehr_id/value='" + patientId.getValue() + "'";
+        return " e/ehr_id/value='" + patientId.getValue() + "'";
     }
 
 

@@ -17,7 +17,7 @@ import java.util.Date;
 @ConfigurationProperties(prefix = "cdr-connector", ignoreUnknownFields = false)
 @Service()
 public class AllergyConnector extends OpenEhrConnector {
-    protected String getAQL() {
+    protected String getAQLQuery() {
         return "select" +
                 " e/ehr_id/value as ehrId," +
                 " e/ehr_status/subject/external_ref/id/value as subjectId," +
@@ -50,8 +50,11 @@ public class AllergyConnector extends OpenEhrConnector {
                 " b_a/data[at0001]/items[at0009]/items[at0032]/value/value as Adverse_reaction_risk_Comment" +
                 " from EHR e" +
                 " contains COMPOSITION a[openEHR-EHR-COMPOSITION.adverse_reaction_list.v1]" +
-                " contains EVALUATION b_a[openEHR-EHR-EVALUATION.adverse_reaction_risk.v1]" +
-                " where a/name/value='Adverse reaction list'";
+                " contains EVALUATION b_a[openEHR-EHR-EVALUATION.adverse_reaction_risk.v1] ";
+    }
+
+    protected String getAQLWhere() {
+        return " where a/name/value='Adverse reaction list'";
     }
 
     public JsonNode getFilteredAllergies(
@@ -62,7 +65,7 @@ public class AllergyConnector extends OpenEhrConnector {
 
         // patient identifier provided
         if (null != patientIdentifier) {
-            filter += getPatientIdentifierFilterAql(patientIdentifier);
+            filter += " and " + getPatientIdentifierFilterAql(patientIdentifier);
         }
 
         // category provided
@@ -75,7 +78,7 @@ public class AllergyConnector extends OpenEhrConnector {
             filter += getLastUpdatedFilterAql(adverseReactionRiskLastUpdated);
         }
 
-        String aql = getAQL() + filter;
+        String aql = getAQLQuery() + getAQLWhere() + filter;
         return getEhrJson(aql);
 
     }

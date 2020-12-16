@@ -20,7 +20,7 @@ import java.util.Date;
 @Service
 public class MedicationStatementConnector extends OpenEhrConnector {
 
-    protected String getAQL() {
+    protected String getAQLQuery() {
         return "select" +
                 "  e/ehr_id/value as ehrId," +
                 "  e/ehr_status/subject/external_ref/id/value as subjectId," +
@@ -50,10 +50,12 @@ public class MedicationStatementConnector extends OpenEhrConnector {
                 " from EHR e" +
                 " contains COMPOSITION a[openEHR-EHR-COMPOSITION.medication_list.v0]" +
                 " contains" +
-                "    INSTRUCTION b_a[openEHR-EHR-INSTRUCTION.medication_order.v1]" +
-                " WHERE a/name/value = 'Medication statement list'";
+                "    INSTRUCTION b_a[openEHR-EHR-INSTRUCTION.medication_order.v1] ";
     }
 
+    public String getAQLWhere() {
+        return " WHERE a/name/value = 'Medication statement list'";
+    }
 
     public JsonNode getFilteredMedicationStatements(
             StringParam patientId,
@@ -66,12 +68,12 @@ public class MedicationStatementConnector extends OpenEhrConnector {
 
         // patient identifier provided
         if (null != patientIdentifier) {
-            filter += getPatientIdentifierFilterAql(patientIdentifier);
+            filter += " and " + getPatientIdentifierFilterAql(patientIdentifier);
         }
 
         // patient id provided
         if (null != patientId) {
-            filter += getPatientIdFilterAql(patientId);
+            filter += " and " + getPatientIdFilterAql(patientId);
         }
 
         // category provided
@@ -84,7 +86,7 @@ public class MedicationStatementConnector extends OpenEhrConnector {
             filter += getdateStartedFilterAql(dateStarted);
         }
 
-        return getEhrJson(getAQL() + filter);
+        return getEhrJson(getAQLQuery() + getAQLWhere() + filter);
     }
 
     private String getdateStartedFilterAql(DateRangeParam dateStarted) {
