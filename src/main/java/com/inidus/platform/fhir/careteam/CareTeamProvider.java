@@ -1,4 +1,4 @@
-package com.inidus.platform.fhir.careplan;
+package com.inidus.platform.fhir.careteam;
 
 import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
@@ -10,8 +10,7 @@ import ca.uhn.fhir.rest.server.IResourceProvider;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.CarePlan;
+import org.hl7.fhir.r4.model.CareTeam;
 import org.hl7.fhir.r4.model.IdType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,46 +18,51 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.List;
 
-@Component("CarePlanProvider")
-public class CarePlanProvider {
+@Component("CareTeamProvider")
+public class CareTeamProvider implements IResourceProvider {
 
-    private final CarePlanConverter converter = new CarePlanConverter();
+    private final CareTeamConverter converter = new CareTeamConverter();
 
     @Autowired
-    private CarePlanConnector connector;
+    private CareTeamConnector connector;
 
-    @Read(type=CarePlan.class)
-    public Bundle getResourceById(@IdParam IdType id) throws IOException, FHIRException {
+    @Override
+    public Class<? extends IBaseResource> getResourceType() {
+        return CareTeam.class;
+    }
+
+    @Read()
+    public CareTeam getResourceById(@IdParam IdType id) throws IOException, FHIRException {
         JsonNode ehrJsonList = connector.getResourceById(id.getIdPart());
 
         if (null != ehrJsonList) {
-            return converter.convertToCarePlan(ehrJsonList);
-        } else {
-            return null;
-        }
-    }
-
-    @Search(type=CarePlan.class)
-    public List<Bundle> getAllResources() throws IOException, FHIRException {
-        JsonNode ehrJsonList = connector.getAllResources();
-
-        if (null != ehrJsonList) {
-            return converter.convertToCarePlanList(ehrJsonList);
+            return converter.convertToCareTeam(ehrJsonList);
         } else {
             return null;
         }
     }
 
     @Search()
-    public List<Bundle> getFilteredResources(
+    public List<CareTeam> getAllResources() throws IOException, FHIRException {
+        JsonNode ehrJsonList = connector.getAllResources();
+
+        if (null != ehrJsonList) {
+            return converter.convertToCareTeamList(ehrJsonList);
+        } else {
+            return null;
+        }
+    }
+
+    @Search()
+    public List<CareTeam> getFilteredResources(
             @OptionalParam(name = "patient.id") StringParam id,
             @OptionalParam(name = "patient.identifier") TokenParam identifier
     ) throws IOException, FHIRException {
 
-        JsonNode ehrJsonList = connector.getFilteredCarePlans(id, identifier);
+        JsonNode ehrJsonList = connector.getFilteredCareTeams(id, identifier);
 
         if (null != ehrJsonList) {
-            return converter.convertToCarePlanList(ehrJsonList);
+            return converter.convertToCareTeamList(ehrJsonList);
         } else {
             return null;
         }

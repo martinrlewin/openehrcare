@@ -6,7 +6,6 @@ import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4.model.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -45,6 +44,31 @@ public class DNRFlagConverter extends OpenEHRConverter {
 
         retVal.setId(convertResourceId(ehrJson));
         retVal.setSubject(convertPatientReference(ehrJson));
+
+        JsonNode textNode = ehrJson.get("s4_cpr_decision");
+        JsonNode codeNode = ehrJson.get("s4_cpr_decision_code");
+
+        if (textNode != null && codeNode != null) {
+            retVal.setStatus(Flag.FlagStatus.ACTIVE);
+
+            CodeableConcept codeableConcept = new CodeableConcept();
+            codeableConcept.setText(textNode.textValue());
+            String codeVal = codeNode.textValue();
+
+            Coding c = new Coding();
+            c.setSystem("http://snomed.info/sct");
+            if (codeVal.equals("at0004")) {
+                c.setCode("450475007");
+            } else if (codeVal.equals("at0005")) {
+                c.setCode("450476008");
+            }
+            codeableConcept.addCoding(c);
+
+            retVal.setCode(codeableConcept);
+
+        } else {
+            retVal.setStatus(Flag.FlagStatus.INACTIVE);
+        }
 
         return retVal;
     }

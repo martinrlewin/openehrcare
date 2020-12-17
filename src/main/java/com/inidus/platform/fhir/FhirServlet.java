@@ -8,10 +8,13 @@ import ca.uhn.fhir.rest.server.RestfulServer;
 import ca.uhn.fhir.rest.server.interceptor.ResponseHighlighterInterceptor;
 import com.inidus.platform.fhir.allergy.AllergyProvider;
 import com.inidus.platform.fhir.careplan.CarePlanProvider;
+import com.inidus.platform.fhir.careteam.CareTeamProvider;
 import com.inidus.platform.fhir.condition.ConditionProvider;
 import com.inidus.platform.fhir.dnrflag.DNRFlagProvider;
 import com.inidus.platform.fhir.medication.MedicationStatementProvider;
+import com.inidus.platform.fhir.patient.PatientResourceProvider;
 import com.inidus.platform.fhir.procedure.ProcedureProvider;
+import com.inidus.platform.fhir.questionnaireresponse.QuestionnaireResponseProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +41,10 @@ public class FhirServlet extends RestfulServer {
     CarePlanProvider careplanProvider;
     @Autowired
     DNRFlagProvider dnrFlagProvider;
+    @Autowired
+    QuestionnaireResponseProvider questionnaireResponseProvider;
+    @Autowired
+    PatientResourceProvider patientResourceProvider;
 
     public FhirServlet() {
         super(FhirContext.forR4());
@@ -47,18 +54,21 @@ public class FhirServlet extends RestfulServer {
     protected void initialize() throws ServletException {
         super.initialize();
 
-        getFhirContext().setNarrativeGenerator(new DefaultThymeleafNarrativeGenerator());
+  //      getFhirContext().setNarrativeGenerator(new DefaultThymeleafNarrativeGenerator());
 
         List<IResourceProvider> providers = new ArrayList<>();
         providers.add(this.allergyProvider);
         providers.add(this.conditionProvider);
         providers.add(this.medicationStatementProvider);
         providers.add(this.procedureProvider);
-        providers.add(this.careplanProvider);
         providers.add(this.dnrFlagProvider);
+        providers.add(this.questionnaireResponseProvider);
+        providers.add(this.patientResourceProvider);
         setResourceProviders(providers);
 
-   //     registerInterceptor(new ResponseHighlighterInterceptor());
+        registerProvider(this.careplanProvider);
+
+     //   registerInterceptor(new ResponseHighlighterInterceptor());
         setDefaultPrettyPrint(true);
         setDefaultResponseEncoding(EncodingEnum.JSON);
     }

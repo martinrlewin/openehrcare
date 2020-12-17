@@ -1,4 +1,4 @@
-package com.inidus.platform.fhir.dnrflag;
+package com.inidus.platform.fhir.careteam;
 
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
@@ -14,9 +14,11 @@ import java.io.IOException;
  */
 @ConfigurationProperties(prefix = "cdr-connector", ignoreUnknownFields = false)
 @Service
-public class DNRFlagConnector extends OpenEhrConnector {
+public class CareTeamConnector extends OpenEhrConnector {
 
     protected String getAQLQuery() {
+        // TODO: replace with real content
+
         return  "SELECT c/context/start_time/value as compositionStartTime,\n" +
         "e/ehr_id/value as ehrId,\n" +
         "e/ehr_status/subject/external_ref/id/value as subjectId,\n" +
@@ -31,7 +33,6 @@ public class DNRFlagConnector extends OpenEhrConnector {
         "h/items[at0007]/items[openEHR-EHR-EVALUATION.recommendation.v1]/data[at0001]/items[at0002,'Clinical focus']/value/value as s4_recommended_clinical_focus,\n" +
         "h/items[at0007]/items[openEHR-EHR-EVALUATION.recommendation.v1]/data[at0001]/items[at0003,'Clinical guidance on interventions']/value/value as s4_recommended_clinical_guidance,\n" +
         "h/items[at0007]/items[openEHR-EHR-EVALUATION.cpr_decision_uk.v0]/data[at0001]/items[at0003]/value/value as s4_cpr_decision,\n" +
-        "h/items[at0007]/items[openEHR-EHR-EVALUATION.cpr_decision_uk.v0]/data[at0001]/items[at0003]/value/defining_code/code_string as s4_cpr_decision_code,\n" +
         "h/items[at0007]/items[openEHR-EHR-EVALUATION.cpr_decision_uk.v0]/data[at0001]/items[at0002]/value/value as s4_cpr_date,\n" +
         "h/items[at0008]/items[openEHR-EHR-EVALUATION.mental_capacity.v0]/data[at0001]/items[at0009]/value/value as s5_mental_decision,\n" +
         "h/items[at0008]/items[openEHR-EHR-EVALUATION.mental_capacity.v0]/data[at0001]/items[at0002,'Does the person have capacity to participate in making recommendations on this plan?']/value/value as s5_mental_has_capacity,\n" +
@@ -48,8 +49,7 @@ public class DNRFlagConnector extends OpenEhrConnector {
     }
 
     public String getAQLWhere() {
-        // Fixed composition for demo which guarantees good data
-        return "WHERE compositionId = '5ff4861f-21ad-4d3a-962f-2d7d703d9b74::a81f47c6-a757-4e34-b644-3ccc62b4a01c::1'\n";
+        return "";
     }
 
     public String getAQLOrderBy() {
@@ -57,7 +57,7 @@ public class DNRFlagConnector extends OpenEhrConnector {
                 "OFFSET 0 LIMIT 1000";
     }
 
-    public JsonNode getFilteredCarePlans(
+    public JsonNode getFilteredCareTeams(
             StringParam patientId,
             TokenParam patientIdentifier
     ) throws IOException {
@@ -79,7 +79,7 @@ public class DNRFlagConnector extends OpenEhrConnector {
             }
             filter += getPatientIdFilterAql(patientId);
         }
-// removed for demo
-        return getEhrJson(getAQLQuery() + getAQLWhere() + getAQLOrderBy()); // getEhrJson(getAQLQuery() + getAQLWhere() + filter + getAQLOrderBy());
+
+        return getEhrJson(getAQLQuery() + getAQLWhere() + filter + getAQLOrderBy());
     }
 }

@@ -1,16 +1,17 @@
-package com.inidus.platform.fhir.careplan;
+package com.inidus.platform.fhir.careteam;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.inidus.platform.fhir.openehr.OpenEHRConverter;
 import org.hl7.fhir.exceptions.FHIRException;
-import org.hl7.fhir.r4.model.*;
+import org.hl7.fhir.r4.model.CareTeam;
+import org.hl7.fhir.r4.model.Condition;
+import org.hl7.fhir.r4.model.Procedure;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class CarePlanConverter extends OpenEHRConverter {
+public class CareTeamConverter extends OpenEHRConverter {
 
     /**
      * Converts the given json coming from openEHR into 1 {@link Condition} resource.
@@ -18,8 +19,8 @@ public class CarePlanConverter extends OpenEHRConverter {
      *
      * @param ehrJson is the array contained inside the "resultSet" section
      */
-    public Bundle convertToCarePlan(JsonNode ehrJson) throws FHIRException {
-        List<Bundle> list = convertToCarePlanList(ehrJson);
+    public CareTeam convertToCareTeam(JsonNode ehrJson) throws FHIRException {
+        List<CareTeam> list = convertToCareTeamList(ehrJson);
         return list.get(0);
     }
 
@@ -29,22 +30,22 @@ public class CarePlanConverter extends OpenEHRConverter {
      *
      * @param ehrJson is the array contained inside the AQL "resultSet" section
      */
-    public List<Bundle> convertToCarePlanList(JsonNode ehrJson) throws FHIRException {
-        List<Bundle> carePlans = new ArrayList<>();
+    public List<CareTeam> convertToCareTeamList(JsonNode ehrJson) throws FHIRException {
+        List<CareTeam> careTeams = new ArrayList<>();
         Iterator<JsonNode> it = ehrJson.elements();
         while (it.hasNext()) {
-            Bundle resource = createCarePlanResource(it.next());
-            carePlans.add(resource);
+            CareTeam resource = createCareTeamResource(it.next());
+            careTeams.add(resource);
         }
-        return carePlans;
+        return careTeams;
     }
 
-    private Bundle createCarePlanResource(JsonNode ehrJson) throws FHIRException {
+    private CareTeam createCareTeamResource(JsonNode ehrJson) throws FHIRException {
 
-        Bundle retVal = new Bundle();
+        CareTeam retVal = new CareTeam();
 
         retVal.setId(convertResourceId(ehrJson));
-    //    retVal.setSubject(convertPatientReference(ehrJson));
+      //  retVal.setSubject(convertPatientReference(ehrJson));
 
         return retVal;
     }

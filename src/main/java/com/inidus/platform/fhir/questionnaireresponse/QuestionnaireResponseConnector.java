@@ -1,4 +1,4 @@
-package com.inidus.platform.fhir.dnrflag;
+package com.inidus.platform.fhir.questionnaireresponse;
 
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
@@ -14,7 +14,7 @@ import java.io.IOException;
  */
 @ConfigurationProperties(prefix = "cdr-connector", ignoreUnknownFields = false)
 @Service
-public class DNRFlagConnector extends OpenEhrConnector {
+public class QuestionnaireResponseConnector extends OpenEhrConnector {
 
     protected String getAQLQuery() {
         return  "SELECT c/context/start_time/value as compositionStartTime,\n" +
@@ -57,7 +57,7 @@ public class DNRFlagConnector extends OpenEhrConnector {
                 "OFFSET 0 LIMIT 1000";
     }
 
-    public JsonNode getFilteredCarePlans(
+    public JsonNode getFilteredQuestionnaireResponses(
             StringParam patientId,
             TokenParam patientIdentifier
     ) throws IOException {
